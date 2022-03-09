@@ -1,8 +1,8 @@
 ## Overview
 
-Do bugs pop up from nowhere when your system is upgraded/downgraded?
+Do bugs pop up from nowhere when system is upgraded/downgraded?
 
-Do you feel it's very difficult to add/delete/modify configuration on your system?
+Do you feel it's very difficult to add/delete/modify configuration on system?
 
 Do you think the current scheme of dealing with configuration is not portable/scalable at all?
 
