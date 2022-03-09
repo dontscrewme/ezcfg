@@ -1,7 +1,4 @@
-#include <stdio.h>
 #include "syscfg.h"
-#include "sntp_cfg.h"
-
 
 static ini_t def[] = 
 {
