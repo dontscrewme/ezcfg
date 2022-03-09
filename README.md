@@ -2,9 +2,9 @@
 
 Do bugs pop up from nowhere when system is upgraded/downgraded?
 
-Do you feel it's very difficult to add/delete/modify configuration on system?
+Do you feel difficulty as to add/delete/modify configuration on system?
 
-Do you think the current scheme of dealing with configuration is not portable/scalable at all?
+Do you find current scheme of dealing with configuration not portable/scalable at all?
 
 Congratulation! You're at right place.
 
