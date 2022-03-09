@@ -4,21 +4,21 @@
 
 static int default_error_callback(const char* format, ...)
 {
-	va_list argptr;
-	va_start(argptr, format);
-	int ret = vfprintf(stderr, format, argptr);
-	va_end(argptr);
+    va_list argptr;
+    va_start(argptr, format);
+    int ret = vfprintf(stderr, format, argptr);
+    va_end(argptr);
 
-	return ret;
+    return ret;
 }
 
 static int (*syscfg_error_set)(const char*, ...) = &default_error_callback;
 void syscfg_set_error_callback(int (*error_callback)(const char*, ...))
 {	
-	if (error_callback)
-	{
-		syscfg_error_set = error_callback;
-	}
+    if (error_callback)
+    {
+	    syscfg_error_set = error_callback;
+    }
 }
 
 struct syscfg
@@ -27,61 +27,54 @@ struct syscfg
     dictionary* dictionary;
 };
 
-syscfg_t* syscfg_new(char* path, ini_t* def_cfg, unsigned size)
+static syscfg_t* syscfg_new(char* path)
 {
+    syscfg_t* me = malloc(sizeof(syscfg_t));
+    if (NULL == me)
+    {
+        syscfg_error_set("%s: malloc failed\n", __FUNCTION__);
+        return NULL;
+    }
+
+    me->path = path;
+    me->dictionary = iniparser_load(me->path);
+    if (NULL == me->dictionary)
+    {
+        free(me);
+        return NULL;
+    }
+
+    return me;
+}
+
+syscfg_t* syscfg_open(char* path, ini_t* def, unsigned size)
+{
+    if (access(path, F_OK) == 0)
+    {
+	    return syscfg_new(path);
+    }
+
     FILE* ini_file = fopen(path, "w");
     if (NULL == ini_file)
     {
-        syscfg_error_set("%s: CANNOT create %s for write\n", __FUNCTION__, path);
         return NULL;
     }
+
+    syscfg_t* me = syscfg_new(path);
+    
+    unsigned int i = 0;
+    for (; i<size; i++)
+    {		
+        iniparser_set(me->dictionary, def[i].entry, def[i].value);
+    }
 	
-	syscfg_t* me = syscfg_open(path);
-	if (NULL == me)
-	{
-		fclose(ini_file);
-		return NULL;
-	}
-	
-	unsigned int i = 0;
-	for (; i<size; i++)
-	{		
-        iniparser_set(me->dictionary, def_cfg[i].entry, def_cfg[i].value);
-	}
-	
-	iniparser_dump_ini(me->dictionary, ini_file);
+    iniparser_dump_ini(me->dictionary, ini_file);
     fclose(ini_file);
 
     return me;
-
-}
-syscfg_t* syscfg_open(const char* path)
-{
-	if (access(path, F_OK) != 0)
-	{	
-		syscfg_error_set("%s: no %s exist!\n", __FUNCTION__, path);
-		return NULL;
-	}
-	
-	syscfg_t* me = malloc(sizeof(syscfg_t));
-	if (NULL == me)
-	{
-		syscfg_error_set("%s: malloc failed\n", __FUNCTION__);
-		return NULL;
-	}
-
-	me->path = path;
-	me->dictionary = iniparser_load(me->path);
-	if (NULL == me->dictionary)
-	{
-		free(me);
-		return NULL;
-	}
-	
-	return me;
 }
 
-int syscfg_update(syscfg_t* me, ini_t* def_cfg, unsigned size)
+int syscfg_update(syscfg_t* me, ini_t* def, unsigned size)
 {
     dictionary* new_me = iniparser_load(me->path);
     if (NULL == new_me)
@@ -90,11 +83,11 @@ int syscfg_update(syscfg_t* me, ini_t* def_cfg, unsigned size)
     }
     
     unsigned int i = 0;
-	for (; i<size; i++)
-	{
-        const char* value = iniparser_getstring(me->dictionary, def_cfg[i].entry, def_cfg[i].value);
-        iniparser_set(new_me, def_cfg[i].entry, value);
-	}
+    for (; i<size; i++)
+    {
+	    const char* value = iniparser_getstring(me->dictionary, def[i].entry, def[i].value);
+	    iniparser_set(new_me, def[i].entry, value);
+    }
 
     FILE* ini_file = fopen(me->path, "w");
     if (NULL == ini_file)
@@ -114,11 +107,11 @@ int syscfg_update(syscfg_t* me, ini_t* def_cfg, unsigned size)
 int syscfg_duplicate(syscfg_t* me, const char* path)
 {
     FILE* new_file = fopen(path, "w");
-	if (NULL == new_file)
-	{
-		syscfg_error_set("%s: CANNOT create %s for write\n", __FUNCTION__, path);
-		return -1;	
-	}
+    if (NULL == new_file)
+    {
+	    syscfg_error_set("%s: CANNOT create %s for write\n", __FUNCTION__, path);
+	    return -1;	
+    }
 	
     iniparser_dump_ini(me->dictionary, new_file);
     fclose(new_file);
