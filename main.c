@@ -5,7 +5,7 @@
 typedef struct
 {
     char* path;
-    ini_t* (*def_cfg)(void);
+    ini_t* (*def)(void);
     unsigned (*size)(void);
 }cfg_map_t;
 
@@ -19,21 +19,14 @@ int main(int argc, char** argv)
     unsigned i = 0;
     for(; i<COUNT_OF(cfg_map); i++)
     {
-        syscfg_t* cfg = syscfg_open(cfg_map[i].path);
+        syscfg_t* cfg = syscfg_open(cfg_map[i].path, cfg_map[i].def(), cfg_map[i].size());
         if (NULL == cfg)
         {
-            cfg = syscfg_new(cfg_map[i].path, cfg_map[i].def_cfg(), cfg_map[i].size());
-            if (NULL == cfg)
-            {
-                continue;
-            }
-        }
-        else
-        {
-            syscfg_update(cfg, cfg_map[i].def_cfg(), cfg_map[i].size());         
+            continue;
         }
 
-        syscfg_free(cfg);        
+        syscfg_update(cfg, cfg_map[i].def(), cfg_map[i].size());
+        syscfg_free(cfg);
     }
 
     return 0;
