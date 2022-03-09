@@ -1,13 +1,15 @@
 #ifndef SYSCFG_H
 #define SYSCFG_H
 
+#include <stdio.h>
+
+#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
 typedef struct
 {
 	const char* entry; // section:keyword
 	const char* value;
 }ini_t;
-
-#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
 typedef struct syscfg syscfg_t;
 
