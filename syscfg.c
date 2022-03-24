@@ -120,7 +120,7 @@ int syscfg_duplicate(syscfg_t* me, const char* path)
 
 int syscfg_save_entry(syscfg_t* me, const char* entry, const char* value)
 {
-    if ((iniparser_find_entry(me->dictionary, entry) == -1)
+    if ((!iniparser_find_entry(me->dictionary, entry))
      || (iniparser_set(me->dictionary, entry, value) == -1))
     {
         return -1;
@@ -141,7 +141,7 @@ int syscfg_save_entry(syscfg_t* me, const char* entry, const char* value)
 
 int syscfg_retrieve_entry(syscfg_t* me, const char* entry, const char** value)
 {
-    if (iniparser_find_entry(me->dictionary, entry) == -1)
+    if (!iniparser_find_entry(me->dictionary, entry))
     {
         return -1;
     }
