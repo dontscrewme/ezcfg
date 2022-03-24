@@ -27,7 +27,7 @@ struct syscfg
     dictionary* dictionary;
 };
 
-static syscfg_t* syscfg_new(char* path)
+static ezcfg_t* ezcfg_new(char* path, ini_t* def, unsigned size)
 {
     syscfg_t* me = malloc(sizeof(syscfg_t));
     if (NULL == me)
@@ -43,6 +43,12 @@ static syscfg_t* syscfg_new(char* path)
         free(me);
         return NULL;
     }
+	
+    unsigned int i = 0;
+    for (; i<size; i++)
+    {		
+	iniparser_set(me->dictionary, def[i].entry, def[i].value);
+    }
 
     return me;
 }
@@ -50,9 +56,9 @@ static syscfg_t* syscfg_new(char* path)
 syscfg_t* syscfg_open(char* path, ini_t* def, unsigned size)
 {
     if (access(path, F_OK) == 0)
-	{
-		return syscfg_new(path);
-	}
+    {
+        return syscfg_new(path);
+    }
 
     FILE* ini_file = fopen(path, "w");
     if (NULL == ini_file)
@@ -60,15 +66,8 @@ syscfg_t* syscfg_open(char* path, ini_t* def, unsigned size)
         return NULL;
     }
 
-    syscfg_t* me = syscfg_new(path);
-    
-    unsigned int i = 0;
-	for (; i<size; i++)
-	{		
-        iniparser_set(me->dictionary, def[i].entry, def[i].value);
-	}
-	
-	iniparser_dump_ini(me->dictionary, ini_file);
+    syscfg_t* me = syscfg_new(path, def, size);
+    iniparser_dump_ini(me->dictionary, ini_file);
     fclose(ini_file);
 
     return me;
@@ -83,11 +82,11 @@ int syscfg_update(syscfg_t* me, ini_t* def, unsigned size)
     }
     
     unsigned int i = 0;
-	for (; i<size; i++)
-	{
+    for (; i<size; i++)
+    {
         const char* value = iniparser_getstring(me->dictionary, def[i].entry, def[i].value);
         iniparser_set(new_me, def[i].entry, value);
-	}
+    }
 
     iniparser_freedict(me->dictionary);
     me->dictionary = new_me;
@@ -107,11 +106,11 @@ int syscfg_update(syscfg_t* me, ini_t* def, unsigned size)
 int syscfg_duplicate(syscfg_t* me, const char* path)
 {
     FILE* new_file = fopen(path, "w");
-	if (NULL == new_file)
-	{
-		syscfg_error_set("%s: CANNOT create %s for write\n", __FUNCTION__, path);
-		return -1;	
-	}
+    if (NULL == new_file)
+    {
+        syscfg_error_set("%s: CANNOT create %s for write\n", __FUNCTION__, path);
+	return -1;	
+    }
 	
     iniparser_dump_ini(me->dictionary, new_file);
     fclose(new_file);
